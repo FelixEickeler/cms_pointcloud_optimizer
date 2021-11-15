@@ -1,0 +1,19 @@
+version: "2.3"
+services:
+  cms-pointlcoud-optimizer:
+    build:
+      context: .
+      dockerfile: cms_optimizer.Dockerfile
+    container_name: cms_optimizer
+    stdin_open: true
+    shm_size: "32gb"
+    #volumes:
+        #- ../:/home/simpl/CM
+        #- /home/fnoic/Desktop/data/box_office_data
+    ports:
+        - "2243:22"
+    environment:
+        - LOCAL_UID=${UUID}
+        - LOCAL_GID=${GID}
+    entrypoint: /usr/local/bin/cms_optimizer-entrypoint.sh
+    command: /usr/local/bin/init.sh

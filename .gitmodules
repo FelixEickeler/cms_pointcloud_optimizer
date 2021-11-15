@@ -1,0 +1,9 @@
+[submodule "modules/cilantro"]
+	path = modules/cilantro
+	url = https://github.com/kzampog/cilantro.git
+[submodule "modules/spdlog"]
+	path = modules/spdlog
+	url = https://github.com/gabime/spdlog.git
+[submodule "modules/googletest"]
+	path = modules/googletest
+	url = https://github.com/google/googletest.git
