@@ -1,0 +1,18 @@
+{
+  "comment": "default cms_point_cloud compression config",
+  "version": "1906",
+  "compression_parameters": {
+    "c": 0.1,
+    "c_thr": 0.001,
+    "c_1": 8.75,
+    "c_2": 9.82,
+    "c_3": 3.09,
+    "c_4": 0.02,
+    "sig_d": 0.1,
+    "sig_n": 0.7,
+    "sig_rgb": 0.7,
+    "sig_i": 0.2
+  },
+  "point_factor":20,
+  "compression_strategy": "AdaptiveBilateralCompression"
+}
