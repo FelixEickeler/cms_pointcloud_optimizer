@@ -2,6 +2,8 @@
 // Created by felix on 15.11.2021.
 //
 #include "configuration_parser.h"
+#include "helpers.h"
+#include <memory>
 
 using Path = std::filesystem::path;
 using json = nlohmann::json;
@@ -9,15 +11,13 @@ using namespace cms_opti;
 
 namespace cms_opti::configurations{
 
-std::tuple<NonApproachRelatedConfig, std::unique_ptr<cms_opti::CompressionStrategy>> parse_configuration(const Path &configuration_path) {
+std::unique_ptr<cms_opti::CompressionStrategy> parse_configuration(const Path &configuration_path, NonApproachRelatedConfig& narc, std::unique_ptr<cms_opti::CompressionStrategy>& lolo) {
     auto given_config = json_from_file(configuration_path);
     auto config = json_from_default("./default_config.json");
     config.merge_patch(given_config);
     spdlog::get("console")->info("Configuraiton to_be_used:\n{}", config.dump(4));
-
-    auto narc = parse_outer_configuration(config);
-    auto strategy = strategy_factory(config["compression_strategy"], config["compression_parameters"]);
-    return {std::move(narc), std::move(strategy)};
+    narc = parse_outer_configuration(config);
+    return strategy_factory(config["compression_strategy"], config["compression_parameters"]);
 }
 
 std::unique_ptr<CompressionStrategy> strategy_factory(const std::string& strategy_name, const json &valid_config) {
@@ -25,7 +25,7 @@ std::unique_ptr<CompressionStrategy> strategy_factory(const std::string& strateg
     switch (hash(strategy_name.c_str())) {
         case hash("AdaptiveBilateralCompression"): {
             auto parameters = valid_config.get<AdaptiveBilateralParameters>();
-            strategy = std::make_unique<AdaptiveBilateralCompression>(AdaptiveBilateralCompression(parameters));
+            strategy = std::unique_ptr<CompressionStrategy>(new AdaptiveBilateralCompression(parameters));
             break;
         }
         default:

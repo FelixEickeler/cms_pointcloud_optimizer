@@ -9,14 +9,13 @@
 
 namespace cilantro {
     template<class Derived>
-    struct PointCloudBase : IsPointCloud{
+    struct PointCloudBase{
         /// These need to be implemented, see existing classes as example
         void resize(Eigen::Index rows, Eigen::Index cols);
         void set_right_cols(Eigen::Index cols, const Derived &cloud);
         void swap_point(Eigen::Index dst, Eigen::Index src);
 
         /// Base definitions e.g. actual methods
-        bool is_pointcloud() override;
         void clear();
         Derived& append(const Derived &cloud);
         [[nodiscard]] inline size_t size() const;

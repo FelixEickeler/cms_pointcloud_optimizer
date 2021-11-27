@@ -15,7 +15,9 @@ namespace cms_opti::configurations {
         std::vector <std::string> evaluate_on_property = {"Coordinates", "Color", "Intensity"};
     };
 
-    struct CompressionParameterSet {};
+    struct CompressionParameterSet {
+        float compression_ratio = 0.4;
+    };
 
     struct AdaptiveBilateralParameters : CompressionParameterSet {
         float c = 0;
@@ -29,6 +31,23 @@ namespace cms_opti::configurations {
         float sig_rgb = 0;
         float sig_i = 0;
         int point_factor = 20;
+    };
+
+    class CompressionResultSetting{
+        private:
+            long reduce_to = 0;
+            float ratio = 0.0;
+
+        public:
+        CompressionResultSetting(float _ratio, long _points) : ratio(_ratio), reduce_to(_points){}
+        CompressionResultSetting()= default;
+
+        long calculate_remaining(long points){
+            if(reduce_to < 2){
+                reduce_to = std::ceil(ratio * points);
+            }
+            return reduce_to;
+        }
     };
 }
 

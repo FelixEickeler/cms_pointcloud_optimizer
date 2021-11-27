@@ -4,11 +4,15 @@
 #include "iostream"
 //#include <cilantro/core/kd_tree.hpp>
 #include <tclap/CmdLine.h>
+#include "tclap/Arg.h"
 #include <filesystem>
+#include <random>
 #include "spdlog/spdlog.h"
 #include "helpers.h"
 #include "configuration_parser.h"
 #include "cilantro_extensions/pointclouds.h"
+#include "cilantro_extensions/includes/file_parser.h"
+#include "cilantro_extensions/includes/file_writer.h"
 
 using namespace TCLAP;
 using Path = std::filesystem::path;
@@ -28,9 +32,17 @@ int main(int argc, char **argv) {
                                         "homer", "string");
         cmd.add(configArg);
 
-        // Define a switch and add it to the command line.
-        SwitchArg reverseSwitch("r", "reverse", "Print name backwards", false);
-        cmd.add(reverseSwitch);
+        ValueArg<std::string> estimateNormalArg("", "estimate_normals",
+                                        "Estimate normals. Possible values: knn=N where N is the NN-Count [default: knn=5]", false,
+                                        "knn=5", "string");
+        cmd.add(estimateNormalArg);
+
+        ValueArg<float> ratioArg("r", "compression_ratio",
+                                                "Define compression ratio", false,
+                                                0.4, "float");
+        ValueArg<long> pointsArg("p", "points",  "Define Number of points that should be kept", false,
+                                                0, "long");
+        cmd.xorAdd(ratioArg, pointsArg);
 
         // Parse the args.
         cmd.parse(argc, argv);
@@ -52,67 +64,77 @@ int main(int argc, char **argv) {
         if (not exists(config_path)) {
             spdlog::get("console")->info("No configuration given, the input will be processed with the default configuration!", config_path.string());
         }
-        auto [narc, strategy] = cms_opti::configurations::parse_configuration(config_path);
+        NonApproachRelatedConfig narc;
+        std::unique_ptr<cms_opti::CompressionStrategy> pointer;
+        auto strategy = cms_opti::configurations::parse_configuration(config_path, narc, pointer);
+//        auto& ab = dynamic_cast<cms_opti::AdaptiveBilateralCompression&>(*strategy);
+        strategy->compression_result_setting = CompressionResultSetting(ratioArg.getValue(), pointsArg.getValue());
 
-        PlyParser plyParser(input_path);
-        auto header = plyParser.parse_header();
-        int pcs_elector = 0;
-        if(contains(header, "vertex")){
-            auto& vm = header["vertex"];
-            if(contains(vm, "x") && contains(vm, "y") && contains(vm, "z")){
-                pcs_elector = pcs_elector | (1 << 3);
+        auto arg_normals =  estimateNormalArg.getValue();
+        auto pos = arg_normals.find('=');
+        cms_opti::EstimateNormalSetting estimate_normals;
+
+        if(pos != std::string::npos){
+            estimate_normals.algorithm = to_lower(arg_normals.substr(0, pos));
+            if(contains(cms_opti::EstimateNormalSetting::allowed_algorithms, estimate_normals.algorithm)){
+                try{
+                    estimate_normals.param= std::stoi(arg_normals.substr(pos+1));
+                    strategy->estimate_normals = estimate_normals;
+                }
+                catch (const std::invalid_argument& e) {
+                    spdlog::get("console")->warn("Second argument of estimate_normals is not valid [first=second]");
+                    estimate_normals.algorithm = "";
+                }
             }
-//            if(contains(vm, "nx") && contains(vm, "ny") && contains(vm, "nz")){
-//                pcs_elector = pcs_elector | (1 << 2);
-//            }
-            if(contains(vm, "red") && contains(vm, "green") && contains(vm, "blue")){
-                pcs_elector = pcs_elector | (1 << 1);
+            else{
+                spdlog::get("console")->warn("The first argument of estimate_normals is not supported [first=second]");
+                estimate_normals.algorithm = "";
             }
-            if(contains(vm, "class") || contains(vm, "scalar")){
-                pcs_elector = pcs_elector | (1 << 0);
-            }
+        } else{
+          spdlog::get("console")->warn("The given estimate_normals parameters are not supported");
+          estimate_normals.algorithm = "";
         }
 
-        // TODO UGLY but works for now also define more point clouds also make it so it will work with float and double
-        switch(pcs_elector){
-            case 0b1000:
+        FileParser fileParser(input_path);
+        if(!fileParser.supports_file()){return 0;}
+        auto pointcloud_requirements = fileParser.parse_header();
 
-                {
-                    using adaptor =  PointCloudCartesianAdaptor<cilantro::PointCloudXYZ<float>>;
-                    auto point_cloud = plyParser.parse_data<adaptor>();
+//        spdlog::get("console")->info("Properties identified: {}", fmt::format("{}", fmt::join(property_list.begin(), property_list.end(), ", ")));
+        FileWriter fileWriter(output_path, Metadata());
+        FileOutputSettings out_setting;
+        out_setting.pcr = pointcloud_requirements;
+        fileWriter.output_settings(out_setting);
+
+        // TODO UGLY but works for now also define more point clouds also make it so it will work with float and double
+        using spt = SupportedPointCloudTypes;
+        switch(pointcloud_requirements.type()){
+            case spt::XYZ:{
+                    auto point_cloud = fileParser.parse_data<cilantro::PointCloudXYZ<float>>();
                     cms_opti::CompressionStrategyExecutor<cilantro::PointCloudXYZ<float>> executor(point_cloud, *strategy);
                     executor.compress();
-//                    spdlog::get("console")->info("Only points could be identified1");
-                }
-                spdlog::get("console")->info("Only points could be identified");
-                break;
+                } break;
+            case spt::XYZ_N:{
+                    auto point_cloud = fileParser.parse_data<cilantro::PointCloudXYZN<float>>();
+                    cms_opti::CompressionStrategyExecutor<cilantro::PointCloudXYZN<float>> executor(point_cloud, *strategy);
+                    executor.compress();
+                    fileWriter.write<cilantro::PointCloudXYZN<float>>(point_cloud);
+//                    successfull_written = plyWriter.
+                } break;
             case 0b1001:
-                spdlog::get("console")->info("Points & Scalar identified");
                 break;
             case 0b1010:
             case 0b1011:
-            case 0b1100:
             case 0b1101:
             case 0b1111:
                 spdlog::get("console")->info("Multiple Parameters identified, Full datastructures will be used internally");
                 break;
-
-
             default:
                 spdlog::get("console")->critical("Very wrong dataformat, no Point could be mapped");
 
 
         }
+        spdlog::get("console")->info("\t ---   Output  written to {}     ---", output_path.string());
 
-
-//        auto [metadata, _tmp_cloud] = PlyParser::parse(input_path);
-
-//        auto _xyz = dynamic_cast<cilantro::PointCloudXYZ<float>&>(*_tmp_cloud);
-
-
-        spdlog::get("console")->info("LALA");
-//        ply_parser.parse_ply(input_path);
-//        auto input_points = cms_opti::load_pcs(input_path);
 
 
 

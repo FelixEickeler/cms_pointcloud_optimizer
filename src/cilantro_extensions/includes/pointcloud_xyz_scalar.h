@@ -5,7 +5,7 @@
 namespace cilantro {
 
 template <typename ScalarT, ptrdiff_t EigenDim, typename TScalarFieldType=float, ptrdiff_t TScalarFieldDim=1>
-struct PointCloudCartesianScalar: PointCloudBase<PointCloudCartesianScalar <ScalarT, EigenDim, TScalarFieldType, TScalarFieldDim>>, HasScalarField{
+struct PointCloudCartesianScalar: PointCloudBase<PointCloudCartesianScalar <ScalarT, EigenDim, TScalarFieldType, TScalarFieldDim>>{
 
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     typedef ScalarT Scalar;

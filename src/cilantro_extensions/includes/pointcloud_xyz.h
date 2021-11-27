@@ -17,7 +17,6 @@ struct PointCloudCartesian : PointCloudBase<PointCloudCartesian<ScalarT, EigenDi
     void resize(Eigen::Index cols);
     void set_right_cols(Eigen::Index cols, const PointCloudCartesian<ScalarT,EigenDim>& cloud);
     void swap_point(Eigen::Index dst, Eigen::Index src );
-    bool is_pointcloud() override{return true;}
 };
 #include "../src/pointcloud_xyz.ipp"
 

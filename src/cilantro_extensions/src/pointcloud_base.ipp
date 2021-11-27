@@ -58,5 +58,3 @@ inline unsigned long PointCloudBase<Derived>::size() const { return static_cast<
 template<class Derived>
 inline bool PointCloudBase<Derived>::isEmpty() const { return  static_cast<const Derived *>(this)->points.cols() == 0; }
 
-template<class Derived>
-bool PointCloudBase<Derived>::is_pointcloud() {return true;}
