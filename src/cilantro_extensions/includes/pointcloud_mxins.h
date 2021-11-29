@@ -29,7 +29,7 @@ template <typename T, typename = void>
 struct HasScalarProperty : std::false_type { };
 
 template <typename T>
-struct HasScalarProperty<T, void_t<decltype(T::colors)>> : std::true_type { };
+struct HasScalarProperty<T, void_t<decltype(T::scalars)>> : std::true_type { };
 
 template <typename T, typename = void>
 struct HasIntensityProperty : std::false_type { };

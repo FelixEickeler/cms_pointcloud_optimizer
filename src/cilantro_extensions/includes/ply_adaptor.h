@@ -12,15 +12,15 @@
 #include "helpers.h"
 
 using namespace tinyply;
-template <typename TScalarType> inline Type PlyEigenTypeMap(){return Type::INVALID;};
-template <> inline Type PlyEigenTypeMap<int8_t>(){return Type::INT8;};
-template <> inline Type PlyEigenTypeMap<int16_t>(){return Type::INT16;};
-template <> inline Type PlyEigenTypeMap<int32_t>(){return Type::INT32;};
-template <> inline Type PlyEigenTypeMap<uint8_t>(){return Type::UINT8;};
-template <> inline Type PlyEigenTypeMap<uint16_t>(){return Type::UINT16;};
-template <> inline Type PlyEigenTypeMap<uint32_t>(){return Type::UINT32;};
-template <> inline Type PlyEigenTypeMap<float>(){return Type::FLOAT32;};
-template <> inline Type PlyEigenTypeMap<double>(){return Type::FLOAT64;};
+template <typename TScalarType> inline Type PlyEigenTypeMap(){return Type::INVALID;}
+template <> inline Type PlyEigenTypeMap<int8_t>(){return Type::INT8;}
+template <> inline Type PlyEigenTypeMap<int16_t>(){return Type::INT16;}
+template <> inline Type PlyEigenTypeMap<int32_t>(){return Type::INT32;}
+template <> inline Type PlyEigenTypeMap<uint8_t>(){return Type::UINT8;}
+template <> inline Type PlyEigenTypeMap<uint16_t>(){return Type::UINT16;}
+template <> inline Type PlyEigenTypeMap<uint32_t>(){return Type::UINT32;}
+template <> inline Type PlyEigenTypeMap<float>(){return Type::FLOAT32;}
+template <> inline Type PlyEigenTypeMap<double>(){return Type::FLOAT64;}
 
 struct IAdaptor{
     virtual bool init(const Path& input_path) = 0; //{throw;};
@@ -73,7 +73,7 @@ class PlyAdaptor : public IAdaptor{
     public:
         PlyAdaptor(PlyFile& file, PlyMapping& map);
         PlyAdaptor() : plyfile(new PlyFile){}
-        PlyAdaptor(PlyMapping& map) : plyfile(new PlyFile), _m(map){};
+        explicit PlyAdaptor(PlyMapping& map) : plyfile(new PlyFile), _m(map){};
 
         bool init(const Path& input_path) override;
         PointCloudRequirements infer_requirements() override;
@@ -88,29 +88,30 @@ class PlyAdaptor : public IAdaptor{
         void request_properties()  {
             if constexpr(HasPointProperty<TPointCloudType>::value){
                 try { vertices = this->request_element("vertex", {"x","y","z"}); }
-                catch (const std::exception & e) { spdlog::get("console")->critical("tinyply exception: {}",e.what()); }
+                catch (const std::exception & e) { spdlog::critical("tinyply exception: {}",e.what()); }
             }
             if constexpr(HasNormalProperty<TPointCloudType>::value){
                 try { normals = this->request_element("vertex", {"nx","ny","nz"}); }
-                catch (const std::exception & e) { spdlog::get("console")->critical("tinyply exception: {}",e.what()); }
+                catch (const std::exception & e) { spdlog::critical("tinyply exception: {}",e.what()); }
             }
             if constexpr(HasColorProperty<TPointCloudType>::value){
                 try { colors = this->request_element("vertex", {"red","green","blue"}); }
-                catch (const std::exception & e) { spdlog::get("console")->critical("tinyply exception: {}",e.what()); }
+                catch (const std::exception & e) { spdlog::critical("tinyply exception: {}",e.what()); }
             }
             if constexpr(HasScalarProperty<TPointCloudType>::value){
                 try { scalarfieds = this->request_element("vertex", {"scalar_1"}); }
-                catch (const std::exception & e) { spdlog::get("console")->critical("tinyply exception: {}",e.what()); }
+                catch (const std::exception & e) { spdlog::critical("tinyply exception: {}",e.what()); }
             }
-            if constexpr(HasScalarProperty<TPointCloudType>::value){
+            if constexpr(HasClassProperty<TPointCloudType>::value){
                 try { classes = this->request_element("vertex", {"class"}); }
-                catch (const std::exception & e) { spdlog::get("console")->critical("tinyply exception: {}",e.what()); }
+                catch (const std::exception & e) { spdlog::critical("tinyply exception: {}",e.what()); }
             }
         }
 
         template <class TPointCloudType>
         TPointCloudType parse_pointcloud()  {
             using TPoint = typename TPointCloudType::Scalar;
+
             auto points = cilantro::vectorSetFromPLYDataBuffer<TPoint, TPointCloudType::Param::Dimension>(vertices, TPointCloudType::Param::Dimension);
             TPointCloudType _tmp(points);
             if constexpr(HasNormalProperty<TPointCloudType>::value){
@@ -118,16 +119,17 @@ class PlyAdaptor : public IAdaptor{
             }
             //TODO Make colours work with colored point clouds
             if constexpr(HasColorProperty<TPointCloudType>::value){
-                _tmp.colors = cilantro::vectorSetFromPLYDataBuffer<TPoint, TPointCloudType::Param::Dimension>(colors, TPointCloudType::Param::Dimension);
+                using TColor = typename TPointCloudType::ColorType;
+                _tmp.colors = cilantro::vectorSetFromPLYDataBuffer<TColor, TPointCloudType::Param::ColorDimensions>(colors, TPointCloudType::Param::Dimension);
             }
             //TODO Make colours work with colored point clouds, How to get the type ?
             if constexpr(HasScalarProperty<TPointCloudType>::value){
-                spdlog::get("console")->warn("Scalar field have not been implemented yet!");
+                spdlog::warn("Scalar field have not been implemented yet!");
             }
             return _tmp;
         }
         template <class TPointCloudType>
-        bool write(const Path& output_path, const TPointCloudType& cloud, FileOutputSettings file_output_settings){
+        bool write(const Path& output_path, const TPointCloudType& cloud,  Eigen::RowVectorXf cost, FileOutputSettings file_output_settings){
             plyfile = std::make_unique<PlyFile>();
             if(file_output_settings.pcr.points_3D){
                 propose_element("vertex", { "x", "y", "z" }, cloud.points);
@@ -168,15 +170,18 @@ class PlyAdaptor : public IAdaptor{
                     propose_element("vertex", {"class"}, _empty);
                 }
             }
-            if(file_output_settings.pcr.has_cost){
-                if constexpr(HasCostProperty<TPointCloudType>::value){
-                    propose_element("vertex", {"cost"}, cloud.cost);
+            if(file_output_settings.pcr.has_cost || file_output_settings.add_cost){
+                if(cost.cols() != cloud.size()){
+                    if constexpr(HasCostProperty<TPointCloudType>::value){
+                        cost = cloud.cost;
+                    }
+                    else{
+                        cost =  Eigen::RowVectorXf::Zero(cloud.size());
+                    }
                 }
-                else{
-                    Eigen::MatrixXf _empty = Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>::Zero(1, cloud.size());
-                    propose_element("vertex", {"cost"}, _empty);
-                }
+                propose_element("vertex", {"cost"}, cost);
             }
+
             // TODO ADD Scalar Int & Scalar Float
 
             // Actually a copy would maybe be better ?
@@ -193,6 +198,7 @@ class PlyAdaptor : public IAdaptor{
             std::ostream outstream(&outbuffer);
             if (outstream.fail()) throw std::runtime_error("failed to open " + output_path.string());
             plyfile->write(outstream, file_output_settings.binary);
+            return true;
         }
 };
 

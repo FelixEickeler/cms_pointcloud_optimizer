@@ -7,7 +7,7 @@
 Path expand_user(Path _path) {
     const char *home = getenv("HOME");
     if (home == nullptr) {
-        spdlog::get("console")->warn("HOME variable not set. No user expand possible");
+        spdlog::warn("HOME variable not set. No user expand possible");
         return _path;
     }
     auto str_path = _path.string();

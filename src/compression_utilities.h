@@ -29,30 +29,30 @@ namespace cms_opti{
         }
     };
 
-    template<class TPointcloud>
-    CloudStatistics ComputeCloudResolution(const TPointcloud &cloud){
+    template<class TPointcloud, class TTree>
+    CloudStatistics ComputeCloudResolution(const TPointcloud &cloud, const TTree& tree, size_t count=10){
         if constexpr(HasPointProperty<TPointcloud>::value){
-            auto count = 5;
-            cilantro::KDTree3f<> tree(cloud.points);
             CloudStatistics cr;
-            //TODO use parallel version with 128 ?`
+            //TODO use parallel
             for(auto idx=0; idx < cloud.size(); ++idx){
-                cilantro::NeighborSet<float> nn = tree.kNNSearch(cloud.points.col(idx), count+1);
-                cr.mean += std::accumulate(nn.begin()+1, nn.end(), 0.0, [](auto acc, const auto& _nn){
-                    return acc + _nn.value;
+                cilantro::NeighborSet<float> nn = tree->kNNSearch(cloud.points.col(idx), count+1);
+                std::for_each(std::next(nn.begin()), nn.end(), [&cr](auto& nn){
+                    nn.value = sqrt(nn.value); // transform
+                    cr.mean += nn.value; // accumulate
                 });
-                cr.max = std::max(cr.max, nn.back().value);
-                cr.min = std::min(cr.min, nn[1].value);
+
+                cr.max = std::max(cr.max, float(sqrt(nn.back().value)));
+                cr.min = std::min(cr.min, float(sqrt(nn[1].value)));
             }
             cr.mean /= cloud.size() * count;
-            spdlog::get("console")->info("Cloudresoltion is {}, mind_dist: {} , max_distance:{}", cr.mean, cr.min, cr.max);
             if constexpr(HasIntensityProperty<TPointcloud>::value){
-                cr.roh_min = cloud.intensities.minCoeff();
-                cr.roh_max = cloud.intensities.maxCoeff();
+                cr.roh_min = cloud.intensity.minCoeff();
+                cr.roh_max = cloud.intensity.maxCoeff();
             }
             return cr;
         }
     }
+
 
 
 }

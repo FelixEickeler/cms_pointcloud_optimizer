@@ -32,7 +32,7 @@ class  FileParser{
             if(contains(FileParser::ending2adaptor, suffix)){
                 adaptor = std::unique_ptr<IAdaptor>(FileParser::ending2adaptor[suffix]());
             } else{
-                spdlog::get("console")->critical("This file type ({}) is not supported! Terminating !", suffix);
+                spdlog::critical("This file type ({}) is not supported! Terminating !", suffix);
             }
             adaptor->init(input_path);
         };

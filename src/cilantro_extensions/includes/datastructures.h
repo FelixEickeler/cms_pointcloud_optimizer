@@ -10,15 +10,6 @@
 using PlyMapping = std::unordered_map<std::string, std::unordered_map<std::string, std::string>>;
 using Path = std::filesystem::path;
 
-enum SupportedPointCloudTypes {
-    XYZ = 1,
-    XYZ_N = 3,
-    XYZ_RGB = 5,
-    XYZ_N_RGB = 7,
-    XYZ_N_I = 19,
-    XYZ_N_RGB_I = 23,
-    XYZ_N_RGB_I_C = 87
-};
 
 
 enum PlyDialect{
@@ -32,7 +23,37 @@ struct Metadata{
     PlyDialect dialect = PlyDialect::custom;
 };
 
+
+enum SupportedPointCloudTypes {
+    XY_N = 2,
+    XY_RGB = 4,
+    XY_RGBA = 8,
+    XY_I = 16,
+    XY_R = 32,
+    XY_T = 64,
+    XY_C = 1024,
+
+    XYZ = 1,
+    XYZ_N = XYZ + XY_N,
+    XYZ_RGB = XYZ + XY_RGB,
+    XYZ_RGBA = XYZ + XY_RGBA,
+    XYZ_I = XYZ + XY_I,
+    XYZ_N_RGB = XYZ_N + XY_RGB,
+    XYZ_N_RGBA = XYZ_N + XY_RGBA,
+    XYZ_N_I = XYZ_N + XY_I,
+    XYZ_N_RGB_I = XYZ_N_RGB + XY_I,
+    XYZ_N_RGBA_I = XYZ_N_RGBA + XY_I,
+
+    XYZ_N_T =  XYZ_N + XY_T,
+    XYZ_RGB_T = XYZ_RGB + XY_T,
+    XYZ_N_RGB_T = XYZ_N_RGB + XY_T,
+    XYZ_N_I_T = XYZ_N_I + XY_T,
+    XYZ_N_RGB_I_T = XYZ_N_RGB_I + XY_T,
+    XYZ_N_RGBA_I_T = XYZ_N_RGBA_I + XY_T,
+};
+
 struct PointCloudRequirements {
+
     union {
         struct {
             uint16_t points_3D : 1;
@@ -42,7 +63,8 @@ struct PointCloudRequirements {
             uint16_t has_classes: 1;
             uint16_t has_integer: 3;
             uint16_t has_cost: 1;
-            uint16_t unused: 1;
+            uint16_t has_float: 3;
+            uint16_t unused: 2;
         };
         uint16_t binary{};
     };
@@ -55,6 +77,7 @@ struct FileOutputSettings{
     bool binary = false;
     ulong chunks = 0;
     bool compressed = false;
+    bool add_cost = true;
     [[nodiscard]] bool split_into_chunks() const;
 };
 

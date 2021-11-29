@@ -40,8 +40,8 @@ inline Derived &PointCloudBase<Derived>::remove(const std::vector<IndexT> &indic
         clear();
         return *static_cast<Derived*>(this);
     }
-    auto new_end = static_cast<Derived*>(this)->size() - 1;
 
+    auto new_end = static_cast<Derived*>(this)->size() - 1;
     std::vector<IndexT> sorted_indices(indices.size());
     std::partial_sort_copy(indices.begin(), indices.end(), sorted_indices.begin(), sorted_indices.end(), std::greater<IndexT>());
     for (auto &index: sorted_indices) {
