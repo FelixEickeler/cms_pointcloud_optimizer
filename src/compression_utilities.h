@@ -33,7 +33,7 @@ namespace cms_opti{
     CloudStatistics ComputeCloudResolution(const TPointcloud &cloud, const TTree& tree, size_t count=10){
         if constexpr(HasPointProperty<TPointcloud>::value){
             CloudStatistics cr;
-            //TODO use parallel
+            auto begin = cloud.points.colwise();
             for(auto idx=0; idx < cloud.size(); ++idx){
                 cilantro::NeighborSet<float> nn = tree->kNNSearch(cloud.points.col(idx), count+1);
                 std::for_each(std::next(nn.begin()), nn.end(), [&cr](auto& nn){

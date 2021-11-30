@@ -147,14 +147,16 @@ namespace cms_opti{
                     // remove points from cloud
                     cloud.remove(to_be_removed);
                     removed_points += cycle_removes;
-                    spdlog::info(" {:>7}          {:>5.2f}s    {:>9} pts   {:>7}/{:<7}     {:>.2f} ", pcnt++,sw,cycle_removes,
-                                                 removed_points, number_points_to_be_removed, float(cloud.size()) / original_size);
+
 
                     // reset tree
                     tree = std::make_unique<KDTree<TPointCloud>>(cloud.points, tree_depth);
                     #ifdef ADJUST_STATISTICS // normalization in eval will change
                     cloud_statistics = cms_opti::ComputeCloudResolution(cloud, tree, knn_radius);
                     #endif
+
+                    spdlog::info(" {:>7}          {:>5.2f}s    {:>9} pts   {:>7}/{:<7}     {:>.2f} ", pcnt++,sw,cycle_removes,
+                                 removed_points, number_points_to_be_removed, float(cloud.size()) / original_size);
                 }
                 auto footer = fmt::format("{:>7}          {:>5.2f}s    {:>9} pts    {:>7}/{:<7}  {:>.2f}", pcnt, sw_steps, removed_points,
                                           cloud.size(), reduce_to, float(cloud.size()) / original_size);
@@ -238,10 +240,11 @@ namespace cms_opti{
 
                     // Formula (4)
                     if constexpr(HasColorProperty<TPointCloud>::value){
-                        auto prgb = cloud.colors.col(ic.index);
-                        auto qrgb = cloud.colors.col(nn_it->index);
+                        cilantro::VectorSet<typename TPointCloud::ColorType, TPointCloud::Param::ColorDimensions> prgb = cloud.colors.col(ic.index);
+                        cilantro::VectorSet<typename TPointCloud::ColorType, TPointCloud::Param::ColorDimensions> qrgb = cloud.colors.col(nn_it->index);
+                        auto diff = (prgb.template cast<int>() - qrgb.template cast<int>());
                         // TODO add normalization for different coulor spaces orignal impementation 765
-                        w_rgb = param.sig_rgb / 256 * (prgb - qrgb).norm();
+                        w_rgb = param.sig_rgb / 256 * diff.norm();
                     }
 
                     // Formula (7) Atm the evaluation of (5)/(6) should be done (pre)-dataloading => TODO: add internal evaluation of the radar equation
