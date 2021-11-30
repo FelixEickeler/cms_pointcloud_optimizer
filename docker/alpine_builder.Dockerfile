@@ -7,6 +7,6 @@ RUN mkdir /compressor
 
 WORKDIR compressor
 
-COPY cms_optimizer-entrypoint.sh /usr/local/bin/cms_optimizer-entrypoint.sh
-RUN chmod +x /usr/local/bin/init.sh
-ENTRYPOINT ["/usr/local/bin/cms_optimizer-entrypoint.sh"]
+COPY builder_alpine.sh /usr/local/bin/builder_alpine.sh
+RUN chmod +x /usr/local/bin/builder_alpine.sh
+ENTRYPOINT ["/usr/local/bin/builder_alpine.sh"]
