@@ -1,6 +1,6 @@
 version: "2.3"
 services:
-  cms-pointlcoud-optimizer:
+  cms_optimizer_dev:
     build:
       context: .
       dockerfile: cms_optimizer.Dockerfile
@@ -17,3 +17,19 @@ services:
         - LOCAL_GID=${GID}
     entrypoint: /usr/local/bin/cms_optimizer-entrypoint.sh
     command: /usr/local/bin/init.sh
+
+  cms_optimizer:
+    build:
+      context: .
+      dockerfile: alpine_builder.Dockerfile
+    container_name: cms_optimizer_builder
+    volumes:
+    - ../:/compressor/mount:ro
+    - ../bin:/compressor/bin
+    entrypoint: /usr/local/bin/cms_optimizer-entrypoint.sh
+
+  cms_optimizer_minimal:
+    build:
+      context: .
+      dockerfile: alpine_minimal.Dockerfile
+    container_name: cms_optimizer_minimal

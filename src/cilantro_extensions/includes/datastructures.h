@@ -76,7 +76,7 @@ struct PointCloudRequirements {
 struct FileOutputSettings{
     PointCloudRequirements pcr {};
     bool binary = false;
-    ulong chunks = 0;
+    unsigned long chunks = 0;
     bool compressed = false;
     bool add_cost = true;
     [[nodiscard]] bool split_into_chunks() const;

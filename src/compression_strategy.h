@@ -116,8 +116,8 @@ namespace cms_opti{
                     // tag points -> Note use n-th element if move back to chunks (original implementation)
                     std::sort(idx_cost.begin(), idx_cost.end(), [&](IndexCostPair& ic1, IndexCostPair& ic2){return ic1.cost < ic2.cost;} );
                     auto cycle_removes = 0;
-                    std::vector<unsigned int to_be_removed;
-                    unsigned inttolerated_skips = skip_tolerance_factor * left_to_remove;
+                    std::vector<unsigned int> to_be_removed;
+                    unsigned int tolerated_skips = skip_tolerance_factor * left_to_remove;
                     auto remaining_skips = tolerated_skips;
 
                     //TODO parallelize here ?
