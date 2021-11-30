@@ -6,12 +6,8 @@ It is a practical implementation of a bilateral filtering method that takes mult
 
 The main idea is to not modify the behaviour of the point cloud in engineering tasks and fixed workflows while reducing the time and computational requirements. 
 
-### Quickstart
+## :rocket: Quickstart
 If you just want to test this tool, a docker reduced docker is available:
-docker run cms_compressor [cmd args] 
-
-### Commandline Parameters
-After compiling, the app is supports the following commands:
 ```
 docker run -v {local_input_folder}:/in -v {local_output_folder}:/out eickeler/pointcloud_optimizer -i /in/{input_filename.ply} -o /out/{output_filename.ply} -r 0.4
 ```
@@ -23,8 +19,9 @@ docker run -v {local_input_folder}:/in -v {local_output_folder}:/out eickeler/po
 > 
 > {output_filename} --- filename including the suffix
 
+<br/>
 
-####Compression Settings
+### :artificial_satellite: Compression Settings
 | short |     option       |    description     | default |
 |:-------:|:------------------|:--------------------|:---------:|
 | -i | --input_path  |  input path  [*.ply] | - |
@@ -36,8 +33,9 @@ docker run -v {local_input_folder}:/in -v {local_output_folder}:/out eickeler/po
 | -  | --estimate_normals | Estimate normals  | [knn=5]|  |
 | -  | --version | Displays version information and exits. |  - |
 
+<br />
 
-### Start Development Docker
+## :whale2: Start Development Docker
 A full development environment based on debian bullseye is available. After starting up the docker you will
 be able to connect via port localhost:2243. This can be used by your favorite IDE (Clion).
 
@@ -62,7 +60,9 @@ docker-compose exec -u simpl cms_optimizer_dev bash
 You now can connect with ssh on port 2243 and the username:simpl, pw: theoldone
 Do not forget to shutdown the docker after use with docker-compose down
 
-### Building 
+<br />
+
+## :building_construction: Building 
 Building should be straight forward:
 ```
 git clone https://github.com/FelixEickeler/cms_pointcloud_optimizer.git && cd cms_pointcloud_optimizer 
@@ -72,4 +72,4 @@ cmake ..
 make -j 8
 ```
 
-### TODOS
+## TODOS
