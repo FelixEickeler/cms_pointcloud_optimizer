@@ -6,6 +6,7 @@
 #define CMS_PCS_OPTIMIZER_DATASTRUCTURES_H
 #include <unordered_map>
 #include <filesystem>
+#include <stdint.h>
 
 using PlyMapping = std::unordered_map<std::string, std::unordered_map<std::string, std::string>>;
 using Path = std::filesystem::path;

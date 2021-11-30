@@ -20,10 +20,10 @@ namespace cms_opti{
     };
 
     struct IndexCostPair{
-        uint index = 0;
+        unsigned intindex = 0;
         float cost = 0;
 
-        IndexCostPair& operator=(const uint rhs){
+        IndexCostPair& operator=(const unsigned intrhs){
             index = rhs;
             return *this;
         }

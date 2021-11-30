@@ -64,4 +64,13 @@ docker-compose exec -u boxy box-office bash
 You now can connect with ssh on port 2242 and the username:simpl, pw: theoldone
 Do not forget to shutdown the docker after use with docker-compose down
 
+### Building 
+Building should be straigt forward:
+```
+git clone https://github.com/FelixEickeler/cms_pointcloud_optimizer.git && cd cms_pointcloud_optimizer 
+git submodule init && git submodule update
+mkdir _build && cd _build
+cmake ..
+make -j 8
+```
 ### TODOS
