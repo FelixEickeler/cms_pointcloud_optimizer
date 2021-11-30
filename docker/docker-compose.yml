@@ -18,7 +18,7 @@ services:
     entrypoint: /usr/local/bin/cms_optimizer-entrypoint.sh
     command: /usr/local/bin/init.sh
 
-  cms_optimizer:
+  alpine_builder:
     build:
       context: .
       dockerfile: alpine_builder.Dockerfile
@@ -26,9 +26,9 @@ services:
     volumes:
     - ../:/compressor/mount:ro
     - ../bin:/compressor/bin
-    entrypoint: /usr/local/bin/cms_optimizer-entrypoint.sh
+    entrypoint: /usr/local/bin/builder_alpine.sh
 
-  cms_optimizer_minimal:
+  cms_optimizer:
     build:
       context: .
       dockerfile: alpine_minimal.Dockerfile

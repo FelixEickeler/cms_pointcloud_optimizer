@@ -11,32 +11,30 @@ If you just want to test this tool, a docker reduced docker is available:
 docker run cms_compressor [cmd args] 
 
 ### Commandline Parameters
-After compiling, the app is supports the follwing commands:
+After compiling, the app is supports the following commands:
+```
+docker run -v {local_input_folder}:/in -v {local_output_folder}:/out eickeler/pointcloud_optimizer -i /in/{input_filename.ply} -o /out/{output_filename.ply} -r 0.4
+```
+> {local_input_folder} --- local input folder of the file you want to compress. Use $(pwd) for current directory.)
+> 
+> {local_output_folder} --- local output folder (take care the tool will just overwrite existing data without notice)
+> 
+> {input_filename.ply} --- filename including the suffix. For now, only ply is supported
+> 
+> {output_filename} --- filename including the suffix
+
 
 ####Compression Settings
--r --compression_ratio  
--p --points  
-
---update_cost  Writes the cost as scalar filed
---estimate_normals Estimate normals [knn=N where N is the NN-Count]
-
--c --config_path path to a given configuration file. Not existing attributes will be
-taken from std_config.json [*.json]
-
--o --output_path
-(required)  output path for the compressed point cloud [*.ply]
-
--i --input_path 
-(required)  path to a point cloud [*.ply]
-
---ignore_rest
-Ignores the rest of the labeled arguments following this flag.
-
---version
-Displays version information and exits.
-
-
-
+| short |     option       |    description     | default |
+|:-------:|:------------------|:--------------------|:---------:|
+| -i | --input_path  |  input path  [*.ply] | - |
+| -o | --output_path |  output path  [*.ply] | - |
+| -c | --config_path | path to a given configuration file. Non-existing attributes will be taken from doc/default.json| doc/default.json
+| -r | --compression_ratio |  remaining points factor | - |
+| -p | --points | remaining points count| - |
+| -  | --update_cost | Writes the cost as scalar filed | false |
+| -  | --estimate_normals | Estimate normals  | [knn=5]|  |
+| -  | --version | Displays version information and exits. |  - |
 
 
 ### Start Development Docker
@@ -51,21 +49,21 @@ cd cms_pointcloud_optimizer/docker
 Change the docker-compose.yml, volumes if you need to change mounts or want to change the ports.
 To start the docker built  / run:
 ```
-UUID="$(id -u)" GID="$(id -g)" docker-compose run box-office
+UUID="$(id -u)" GID="$(id -g)" docker-compose run cms_optimizer_dev
 ```
 This command might take a significant amount of time. So be sure to grab a coffee.
 
 To start the docker as daemon (development purpose):
 ```
-UUID="$(id -u)" GID="$(id -g)" docker-compose up -d
-docker-compose exec -u boxy box-office bash
+UUID="$(id -u)" GID="$(id -g)" docker-compose up -d cms_optimizer_dev
+docker-compose exec -u simpl cms_optimizer_dev bash
 ```
 
-You now can connect with ssh on port 2242 and the username:simpl, pw: theoldone
+You now can connect with ssh on port 2243 and the username:simpl, pw: theoldone
 Do not forget to shutdown the docker after use with docker-compose down
 
 ### Building 
-Building should be straigt forward:
+Building should be straight forward:
 ```
 git clone https://github.com/FelixEickeler/cms_pointcloud_optimizer.git && cd cms_pointcloud_optimizer 
 git submodule init && git submodule update
@@ -73,4 +71,5 @@ mkdir _build && cd _build
 cmake ..
 make -j 8
 ```
+
 ### TODOS
