@@ -20,8 +20,7 @@ docker run -v {local_input_folder}:/in -v {local_output_folder}:/out eickeler/po
 > {output_filename} --- filename including the suffix
 
 Warning:
-If you execute this tool in a wsl2 context, the io-performance will be very low. Reading and writing might take a while > 1000s
-
+If you execute this tool in a wsl2 (mounting) context, the io-performance will be very low. Reading and writing might take a while > 1000s.
 <br/>
 
 ### :artificial_satellite: Compression Settings
