@@ -64,6 +64,7 @@ namespace cms_opti{
                 const auto skip_tolerance_factor = 0.05;
                 const int tree_depth = 15;
 
+                spdlog::trace("Building KD-Tree");
                 auto tree = std::make_unique<KDTree<TPointCloud>>(cloud.points, tree_depth);
                 spdlog::stopwatch sw_full;
                 spdlog::stopwatch sw_steps;
@@ -82,6 +83,7 @@ namespace cms_opti{
                             using covarianz_type = cilantro::Covariance<xyz_type, TPointCloud::Param::Dimension>;
                             cilantro::NormalEstimation<xyz_type, TPointCloud::Param::Dimension, covarianz_type, size_t> ne(cloud.points);
                             ne.setViewPoint(cilantro::Vector<xyz_type, TPointCloud::Param::Dimension>::Zero(TPointCloud::Param::Dimension, 1));
+                            cloud.normals.resize(TPointCloud::Param::Dimension, cloud.points.cols());
                             ne.estimateNormalsKNN(cloud.normals, estimate_normals.param);
                         }
                         spdlog::info("Estimation took {:.2}s", sw_steps);
@@ -182,9 +184,15 @@ namespace cms_opti{
                                                       const CloudStatistics &statistics, const int knn_radius) {
                 std::vector<IndexCostPair> idx_cost(cloud.size());
                 std::iota(idx_cost.begin(), idx_cost.end(), 0);
-                std::for_each(std::execution::par_unseq, idx_cost.begin(), idx_cost.end(),  [this, &cloud, &tree, &param, &statistics, &knn_radius](auto& ic){
+                std::for_each(std::execution::seq, idx_cost.begin(), idx_cost.end(),  [this, &cloud, &tree, &param, &statistics, &knn_radius](auto& ic){
                     EvaluateSinglePoint(cloud, tree, ic, param, statistics, knn_radius);
                 });
+
+//          Debug purposes
+//              for (auto ic : idx_cost) {
+//                  EvaluateSinglePoint(cloud, tree, ic, param, statistics, knn_radius);
+//              }
+
                 return idx_cost;
             }
 
@@ -283,7 +291,6 @@ namespace cms_opti{
             }
     };
 
-
     template<class TPointCloud>
     void compression_wrapper(FileParser& fileParser, FileWriter& fileWriter, std::unique_ptr<cms_opti::CompressionStrategy>& strategy){
         auto point_cloud = fileParser.parse_data<TPointCloud>();
@@ -291,7 +298,6 @@ namespace cms_opti{
         auto cost = executor.compress();
         fileWriter.write<TPointCloud>(point_cloud, cost);
     }
-
 }
 
 

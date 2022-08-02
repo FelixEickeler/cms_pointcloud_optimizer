@@ -1,4 +1,4 @@
-FROM debian:bullseye-slim
+FROM debian:bookworm-slim
 # FROM ubuntu:20.04
 
 ENV DEBIAN_FRONTEND noninteractive

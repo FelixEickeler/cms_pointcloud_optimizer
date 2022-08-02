@@ -29,5 +29,8 @@ endif()
 #Copy default config from docs
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/docs/default_config.json ${CMAKE_CURRENT_BINARY_DIR}/bin/default_config.json COPYONLY)
 
+# Debug Flag Collection
+#add_compile_options(-gdwarf-4)
 #set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0")
 #set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
+#SET(CMAKE_C_FLAGS_DEBUG "-D_DEBUG")

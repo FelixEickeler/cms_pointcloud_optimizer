@@ -112,6 +112,12 @@ int main(int argc, char **argv) {
             case spt::XYZ: compression_wrapper<cilantro::PointCloudXYZ<float>>(fileParser, fileWriter, strategy); break;
             case spt::XYZ_N: compression_wrapper<cilantro::PointCloudXYZN<float>>(fileParser, fileWriter, strategy); break;
             case spt::XYZ_RGB:
+                if(arg_normals == "") {
+                    cms_opti::EstimateNormalSetting estimate_normals;
+                    estimate_normals.algorithm = "knn";
+                    estimate_normals.param = 5;
+                    strategy->estimate_normals = estimate_normals;
+                }
             case spt::XYZ_N_RGB: compression_wrapper<cilantro::PointCloudXYZNRGB<float>>(fileParser, fileWriter, strategy); break;
             case spt::XYZ_I:
             case spt::XYZ_N_I: compression_wrapper<cilantro::PointCloudXYZNI<float>>(fileParser, fileWriter, strategy); break;
