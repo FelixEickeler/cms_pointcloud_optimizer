@@ -8,8 +8,7 @@ services:
     stdin_open: true
     shm_size: "32gb"
     #volumes:
-        #- ../:/home/simpl/CM
-        #- /home/fnoic/Desktop/data/box_office_data
+        #- ../:./
     ports:
         - "2243:22"
     environment:

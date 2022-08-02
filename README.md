@@ -8,7 +8,7 @@ The main idea is to not modify the behaviour of the point cloud in engineering t
 
 ## :rocket: Quickstart
 If you just want to test this tool, a docker reduced docker is available:
-```
+```bash
 docker run -v {local_input_folder}:/in -v {local_output_folder}:/out eickeler/pointcloud_optimizer -i /in/{input_filename.ply} -o /out/{output_filename.ply} -r 0.4
 ```
 > {local_input_folder} --- local input folder of the file you want to compress. Use $(pwd) for current directory.)
@@ -18,6 +18,9 @@ docker run -v {local_input_folder}:/in -v {local_output_folder}:/out eickeler/po
 > {input_filename.ply} --- filename including the suffix. For now, only ply is supported
 > 
 > {output_filename} --- filename including the suffix
+
+Warning:
+If you execute this tool in a wsl2 context, the io-performance will be very low. Reading and writing might take a while > 1000s
 
 <br/>
 

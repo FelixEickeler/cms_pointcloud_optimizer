@@ -7,7 +7,7 @@ set(PUBLIC_INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/includes)
 # options
 option(INCLUDE_TESTS "add this to run the tests" ON)
 option(PYTHON "This will compile the python interface" OFF)
-option(ENABLE_NATIVE_BUILD_OPTIMIZATIONS "Enable native build optimization flags" OFF)
+option(ENABLE_NATIVE_BUILD_OPTIMIZATIONS "Enable native build optimization flags" ON)
 
 if (CMAKE_BUILD_TYPE EQUAL "Release")
     add_compile_definitions(SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_INFO)
